@@ -5,18 +5,31 @@ import { useState, useEffect } from 'react';
 import { isObjectBindingPattern } from 'typescript';
 import firebase from 'firebase/app';
 import 'firebase/database';
+import 'firebase/auth';
+import StyledFirebaseAuth from 'react-firebaseui/StyledFirebaseAuth';
 
 const firebaseConfig = {
-  apiKey: "...",
-  authDomain: "...",
-  databaseURL: "...",
-  projectId: "...",
-  storageBucket: "....",
-  messagingSenderId: "...",
-  appId: "..."
+  apiKey: "AIzaSyBm13gwmWDy4YkWk49QkeH3jMHSHfctvTQ",
+  authDomain: "react-scheduler-f2b23.firebaseapp.com",
+  databaseURL: "https://react-scheduler-f2b23.firebaseio.com",
+  projectId: "react-scheduler-f2b23",
+  storageBucket: "",
+  messagingSenderId: "205660915517",
+  appId: "1:205660915517:web:89a943eb1378da711e6754"
+};
+
+const uiConfig = {
+  signInFlow: 'popup',
+  signInOptions: [
+    firebase.auth.GoogleAuthProvider.PROVIDER_ID
+  ],
+  callbacks: {
+    signInSuccessWithAuthResult: () => false
+  }
 };
 
 firebase.initializeApp(firebaseConfig);
+
 const db = firebase.database().ref();
 
 const terms = { F: 'Fall', W: 'Winter', S: 'Spring'};
@@ -132,7 +145,7 @@ const addCourseTimes = course => ({
 
 const addScheduleTimes = schedule => ({
   title: schedule.title,
-  courses: schedule.courses.map(addCourseTimes)
+  courses: Object.values(schedule.courses).map(addCourseTimes)
 });
 
 const CourseList = ({ courses }) => {
@@ -154,12 +167,12 @@ const CourseList = ({ courses }) => {
 
 const App = () => {
   const [schedule, setSchedule] = useState({ title: '', courses: [] });
-  //const url = 'https://courses.cs.northwestern.edu/394/data/cs-courses.php';
 
   useEffect(() => {
     const handleData = snap => {
       if (snap.val()) setSchedule(addScheduleTimes(snap.val()));
     }
+
     db.on('value',handleData, error => alert(error));
     return () => {db.off('value', handleData); };
   }, [])
